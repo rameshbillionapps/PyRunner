@@ -37,6 +37,28 @@ DEBUG = os.environ.get("DEBUG", "False").lower() == "true"
 
 ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
 
+# Automatically extract hostnames from Coolify's SERVICE_FQDN env vars
+from urllib.parse import urlparse
+CSRF_TRUSTED_ORIGINS = os.environ.get("CSRF_TRUSTED_ORIGINS", "").split(",") if os.environ.get("CSRF_TRUSTED_ORIGINS") else []
+
+for key, value in os.environ.items():
+    if key.startswith("SERVICE_FQDN_") and value:
+        try:
+            parsed = urlparse(value)
+            if parsed.hostname and parsed.hostname not in ALLOWED_HOSTS:
+                ALLOWED_HOSTS.append(parsed.hostname)
+            if parsed.scheme and parsed.netloc:
+                origin = f"{parsed.scheme}://{parsed.netloc}"
+                if origin not in CSRF_TRUSTED_ORIGINS:
+                    CSRF_TRUSTED_ORIGINS.append(origin)
+                # Also trust the HTTPS/HTTP counterpart to prevent scheme mismatch issues behind reverse proxies
+                alt_scheme = "https" if parsed.scheme == "http" else "http"
+                alt_origin = f"{alt_scheme}://{parsed.netloc}"
+                if alt_origin not in CSRF_TRUSTED_ORIGINS:
+                    CSRF_TRUSTED_ORIGINS.append(alt_origin)
+        except Exception:
+            pass
+
 
 # Application definition
 
