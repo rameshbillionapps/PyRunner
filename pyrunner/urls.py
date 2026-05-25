@@ -20,7 +20,6 @@ from django.urls import path, include
 from django.shortcuts import redirect
 
 from core.views.webhooks import webhook_trigger_view
-from core.views.auto_jobs import auto_jobs_list_view, auto_job_configure_view, auto_job_execute_api
 
 
 def get_admin_url_slug():
@@ -39,10 +38,6 @@ urlpatterns = [
     path(f"{get_admin_url_slug()}/", admin.site.urls),
     path("setup/", include("core.urls.setup")),
     path("auth/", include("core.urls.auth")),
-    # Auto Jobs (direct routes before cpanel include to avoid being caught by the include)
-    path("cpanel/auto-jobs/", auto_jobs_list_view, name="auto_jobs_list"),
-    path("cpanel/auto-jobs/<uuid:pk>/configure/", auto_job_configure_view, name="auto_job_configure"),
-    path("cpanel/api/auto-jobs/<uuid:pk>/execute/", auto_job_execute_api, name="auto_job_execute"),
     path("cpanel/", include("core.urls.cpanel")),
     # REST API endpoints (token auth required)
     path("api/v1/", include("core.urls.api")),

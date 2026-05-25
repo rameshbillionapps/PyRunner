@@ -3,22 +3,7 @@ URL patterns for control panel.
 """
 from django.urls import path
 from core.views.dashboard import dashboard_view, system_resources_api
-
-# Try importing auto_jobs with error handling
-try:
-    from core.views.auto_jobs import auto_jobs_list_view, auto_job_configure_view, auto_job_execute_api
-except ImportError as e:
-    print(f"ERROR importing auto_jobs: {e}")
-    # Define dummy functions if import fails
-    def auto_jobs_list_view(request):
-        from django.http import HttpResponse
-        return HttpResponse("Auto jobs view failed to import")
-    def auto_job_configure_view(request, pk):
-        from django.http import HttpResponse
-        return HttpResponse("Configure view failed to import")
-    def auto_job_execute_api(request, pk):
-        from django.http import HttpResponse
-        return HttpResponse("Execute view failed to import")
+from core.views.auto_jobs import auto_jobs_list_view, auto_job_configure_view, auto_job_execute_api
 
 from core.views.scripts import (
     script_list_view,
@@ -152,15 +137,10 @@ urlpatterns = [
     path("scripts/<uuid:pk>/webhook/disable/", webhook_disable_view, name="webhook_disable"),
     path("scripts/<uuid:pk>/webhook/regenerate/", webhook_regenerate_view, name="webhook_regenerate"),
 
-    # Auto Jobs TEST
-    path("test-auto-jobs/", auto_jobs_list_view, name="auto_jobs_list"),
-    path("test-auto-jobs/<uuid:pk>/configure/", auto_job_configure_view, name="auto_job_configure"),
-    path("api/test-auto-jobs/<uuid:pk>/execute/", auto_job_execute_api, name="auto_job_execute"),
-
-    # Original auto-jobs (for compatibility)
-    path("auto-jobs/", auto_jobs_list_view, name="auto_jobs_list_compat"),
-    path("auto-jobs/<uuid:pk>/configure/", auto_job_configure_view, name="auto_job_configure_compat"),
-    path("api/auto-jobs/<uuid:pk>/execute/", auto_job_execute_api, name="auto_job_execute_compat"),
+    # Auto Jobs
+    path("auto-jobs/", auto_jobs_list_view, name="auto_jobs_list"),
+    path("auto-jobs/<uuid:pk>/configure/", auto_job_configure_view, name="auto_job_configure"),
+    path("api/auto-jobs/<uuid:pk>/execute/", auto_job_execute_api, name="auto_job_execute"),
 
     # Runs
     path("runs/", run_list_view, name="run_list"),
