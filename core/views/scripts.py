@@ -18,17 +18,27 @@ def script_list_view(request: HttpRequest) -> HttpResponse:
     """List all scripts with optional filtering."""
     scripts = Script.objects.select_related("environment", "created_by").prefetch_related("tags").order_by("-updated_at")
 
-    # Optional filtering by status
-    status_filter = request.GET.get("status")
-    if status_filter == "enabled":
-        scripts = scripts.filter(is_enabled=True, archived_at__isnull=True)
-    elif status_filter == "disabled":
-        scripts = scripts.filter(is_enabled=False, archived_at__isnull=True)
-    elif status_filter == "archived":
-        scripts = scripts.filter(archived_at__isnull=False)
+    # Check for auto-jobs view filter
+    view_filter = request.GET.get("view")
+    if view_filter == "auto-jobs":
+        # Auto jobs: must have webhook_token and webhook_params
+        scripts = scripts.filter(
+            webhook_token__isnull=False,
+            is_enabled=True,
+            archived_at__isnull=True
+        ).exclude(webhook_params__isnull=True)
     else:
-        # Default "All" excludes archived scripts
-        scripts = scripts.filter(archived_at__isnull=True)
+        # Optional filtering by status
+        status_filter = request.GET.get("status")
+        if status_filter == "enabled":
+            scripts = scripts.filter(is_enabled=True, archived_at__isnull=True)
+        elif status_filter == "disabled":
+            scripts = scripts.filter(is_enabled=False, archived_at__isnull=True)
+        elif status_filter == "archived":
+            scripts = scripts.filter(archived_at__isnull=False)
+        else:
+            # Default "All" excludes archived scripts
+            scripts = scripts.filter(archived_at__isnull=True)
 
     # Filter by tag
     tag_filter = request.GET.get("tag")
@@ -45,7 +55,8 @@ def script_list_view(request: HttpRequest) -> HttpResponse:
 
     return render(request, "cpanel/scripts/list.html", {
         "scripts": scripts,
-        "status_filter": status_filter,
+        "status_filter": request.GET.get("status") if view_filter != "auto-jobs" else None,
+        "view_filter": view_filter,
         "all_tags": all_tags,
         "selected_tag": selected_tag,
     })

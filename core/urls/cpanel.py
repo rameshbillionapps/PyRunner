@@ -6,23 +6,54 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, JsonResponse
 from core.views.dashboard import dashboard_view, system_resources_api
 
-# Define auto-jobs views inline to avoid import issues
-@login_required
-def auto_jobs_list_view(request):
-    return HttpResponse("Auto Jobs List - OK")
-
-@login_required
-def auto_job_configure_view(request, pk):
-    return HttpResponse("Configure Auto Job - OK")
-
+# Define auto-jobs API endpoint inline
 @login_required
 def auto_job_execute_api(request, pk):
-    return JsonResponse({"status": "ok"})
+    """Execute an auto-job (script with webhook configured)."""
+    import json
+    from core.models import Script, Run
+    from core.tasks import queue_script_run
 
-# Test route to verify URL routing is working
-@login_required
-def test_route_view(request):
-    return HttpResponse("TEST ROUTE OK")
+    if request.method != 'POST':
+        return JsonResponse({"error": "Method not allowed"}, status=405)
+
+    try:
+        script = Script.objects.get(id=pk, is_enabled=True, archived_at__isnull=True)
+    except Script.DoesNotExist:
+        return JsonResponse({"error": "Script not found"}, status=404)
+
+    if not script.webhook_token or not script.webhook_params:
+        return JsonResponse({"error": "Script not configured as auto-job"}, status=400)
+
+    try:
+        # Create a run for this script
+        run = Run.objects.create(
+            script=script,
+            status=Run.Status.PENDING,
+            triggered_by=request.user,
+            trigger_type=Run.TriggerType.API,
+            code_snapshot=script.code,
+        )
+
+        # Queue the run
+        webhook_data = {
+            'method': 'POST',
+            'body': '{}',
+            'body_json': {},
+            'content_type': 'application/json',
+            'query': {}
+        }
+        queue_script_run(run, webhook_data=webhook_data)
+
+        return JsonResponse({
+            'status': 'queued',
+            'run_id': str(run.id),
+            'run_url': f'/cpanel/runs/{run.id}/'
+        })
+    except Exception as e:
+        return JsonResponse({
+            'error': f'Failed to queue run: {str(e)}'
+        }, status=500)
 
 from core.views.scripts import (
     script_list_view,
