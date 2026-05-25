@@ -18,8 +18,13 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from django.shortcuts import redirect
+from django.http import HttpResponse
 
 from core.views.webhooks import webhook_trigger_view
+
+
+def simple_test_view(request):
+    return HttpResponse("SIMPLE TEST - IF YOU SEE THIS, URLS WORK")
 
 
 def get_admin_url_slug():
@@ -38,6 +43,7 @@ urlpatterns = [
     path(f"{get_admin_url_slug()}/", admin.site.urls),
     path("setup/", include("core.urls.setup")),
     path("auth/", include("core.urls.auth")),
+    path("simple-test/", simple_test_view, name="simple_test"),  # Test route
     path("cpanel/", include("core.urls.cpanel")),
     # REST API endpoints (token auth required)
     path("api/v1/", include("core.urls.api")),
