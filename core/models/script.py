@@ -4,6 +4,7 @@ Script model for user-created Python scripts.
 
 import secrets
 import uuid
+from typing import Optional
 
 from django.conf import settings
 from django.db import models
@@ -169,7 +170,7 @@ class Script(models.Model):
         return self.runs.count()
 
     @property
-    def success_rate(self) -> float | None:
+    def success_rate(self) -> Optional[float]:
         """Return the success rate as a percentage, or None if no runs."""
         total = self.run_count
         if total == 0:
