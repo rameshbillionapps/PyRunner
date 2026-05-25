@@ -152,10 +152,15 @@ urlpatterns = [
     path("scripts/<uuid:pk>/webhook/disable/", webhook_disable_view, name="webhook_disable"),
     path("scripts/<uuid:pk>/webhook/regenerate/", webhook_regenerate_view, name="webhook_regenerate"),
 
-    # Auto Jobs
-    path("auto-jobs/", auto_jobs_list_view, name="auto_jobs_list"),
-    path("auto-jobs/<uuid:pk>/configure/", auto_job_configure_view, name="auto_job_configure"),
-    path("api/auto-jobs/<uuid:pk>/execute/", auto_job_execute_api, name="auto_job_execute"),
+    # Auto Jobs TEST
+    path("test-auto-jobs/", auto_jobs_list_view, name="auto_jobs_list"),
+    path("test-auto-jobs/<uuid:pk>/configure/", auto_job_configure_view, name="auto_job_configure"),
+    path("api/test-auto-jobs/<uuid:pk>/execute/", auto_job_execute_api, name="auto_job_execute"),
+
+    # Original auto-jobs (for compatibility)
+    path("auto-jobs/", auto_jobs_list_view, name="auto_jobs_list_compat"),
+    path("auto-jobs/<uuid:pk>/configure/", auto_job_configure_view, name="auto_job_configure_compat"),
+    path("api/auto-jobs/<uuid:pk>/execute/", auto_job_execute_api, name="auto_job_execute_compat"),
 
     # Runs
     path("runs/", run_list_view, name="run_list"),
