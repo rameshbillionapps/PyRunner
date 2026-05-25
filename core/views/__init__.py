@@ -3,6 +3,7 @@ Views for the core app.
 """
 from .auth import login_view, logout_view, verify_view, magic_link_sent_view
 from .dashboard import dashboard_view
+from .auto_jobs import auto_jobs_list_view, auto_job_configure_view, auto_job_execute_api
 from .scripts import (
     script_list_view,
     script_create_view,
@@ -38,6 +39,10 @@ __all__ = [
     "magic_link_sent_view",
     # Dashboard
     "dashboard_view",
+    # Auto Jobs
+    "auto_jobs_list_view",
+    "auto_job_configure_view",
+    "auto_job_execute_api",
     # Scripts
     "script_list_view",
     "script_create_view",
