@@ -6,6 +6,7 @@ by django-q2 workers.
 """
 
 import logging
+from typing import Optional
 from uuid import UUID
 
 from django.utils import timezone
@@ -73,7 +74,7 @@ def execute_run_task(run_id: str, webhook_data: dict | None = None) -> dict:
     }
 
 
-def queue_script_run(run: Run, webhook_data: dict | None = None) -> str:
+def queue_script_run(run: Run, webhook_data: Optional[dict] = None) -> str:
     """
     Queue a Run for async execution.
 
