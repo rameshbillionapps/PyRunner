@@ -3,7 +3,23 @@ URL patterns for control panel.
 """
 from django.urls import path
 from core.views.dashboard import dashboard_view, system_resources_api
-from core.views.auto_jobs import auto_jobs_list_view, auto_job_configure_view, auto_job_execute_api
+
+# Try importing auto_jobs with error handling
+try:
+    from core.views.auto_jobs import auto_jobs_list_view, auto_job_configure_view, auto_job_execute_api
+except ImportError as e:
+    print(f"ERROR importing auto_jobs: {e}")
+    # Define dummy functions if import fails
+    def auto_jobs_list_view(request):
+        from django.http import HttpResponse
+        return HttpResponse("Auto jobs view failed to import")
+    def auto_job_configure_view(request, pk):
+        from django.http import HttpResponse
+        return HttpResponse("Configure view failed to import")
+    def auto_job_execute_api(request, pk):
+        from django.http import HttpResponse
+        return HttpResponse("Execute view failed to import")
+
 from core.views.scripts import (
     script_list_view,
     script_create_view,
