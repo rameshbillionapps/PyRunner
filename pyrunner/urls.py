@@ -20,6 +20,7 @@ from django.urls import path, include
 from django.shortcuts import redirect
 
 from core.views.webhooks import webhook_trigger_view
+from core.views.auto_jobs import auto_jobs_list_view, auto_job_configure_view, auto_job_execute_api
 
 
 def get_admin_url_slug():
@@ -39,6 +40,10 @@ urlpatterns = [
     path("setup/", include("core.urls.setup")),
     path("auth/", include("core.urls.auth")),
     path("cpanel/", include("core.urls.cpanel")),
+    # Auto Jobs (direct routes to bypass cpanel routing issue)
+    path("cpanel/auto-jobs/", auto_jobs_list_view, name="auto_jobs_list"),
+    path("cpanel/auto-jobs/<uuid:pk>/configure/", auto_job_configure_view, name="auto_job_configure"),
+    path("cpanel/api/auto-jobs/<uuid:pk>/execute/", auto_job_execute_api, name="auto_job_execute"),
     # REST API endpoints (token auth required)
     path("api/v1/", include("core.urls.api")),
     # Public webhook endpoint (no auth required)
