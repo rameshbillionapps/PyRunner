@@ -1,0 +1,104 @@
+{% extends "cpanel/base.html" %}
+
+{% block title %}Auto Jobs{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <div class="flex justify-between items-center">
+        <h1 class="text-3xl font-bold text-code-text">Auto Jobs</h1>
+    </div>
+
+    {% if jobs %}
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% for job in jobs %}
+            <div class="bg-code-bg border border-code-border rounded-lg p-6 hover:border-code-accent/50 transition-colors">
+                <h3 class="text-xl font-semibold text-code-text mb-2">{{ job.name }}</h3>
+                <p class="text-code-muted text-sm mb-4">{{ job.description|default:"No description" }}</p>
+                <button onclick="openJobModal('{{ job.id }}')" class="w-full bg-code-accent hover:bg-code-accent/90 text-white font-medium py-2 px-4 rounded-lg transition-colors">
+                    Run Job
+                </button>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="bg-code-bg border border-code-border rounded-lg p-12 text-center">
+            <p class="text-code-muted mb-4">No auto jobs configured yet.</p>
+            <a href="{% url 'cpanel:script_list' %}" class="text-code-accent hover:underline">Go to Scripts to configure webhooks</a>
+        </div>
+    {% endif %}
+</div>
+
+<div id="job-modal" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+    <div class="bg-code-bg border border-code-border rounded-lg p-8 max-w-md w-full mx-4">
+        <div class="flex justify-between items-center mb-6">
+            <h2 id="modal-title" class="text-2xl font-bold text-code-text">Run Job</h2>
+            <button onclick="closeJobModal()" class="text-code-muted hover:text-code-text">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+        </div>
+        <form id="job-form" onsubmit="executeJob(event)" class="space-y-4">
+            <input type="hidden" id="job-pk" />
+            <div id="form-fields"></div>
+            <button type="submit" id="submit-btn" class="w-full bg-code-accent hover:bg-code-accent/90 text-white font-medium py-2 px-4 rounded-lg transition-colors">
+                Execute
+            </button>
+            <div id="result-msg" class="hidden p-4 rounded-lg text-sm"></div>
+        </form>
+    </div>
+</div>
+
+<script>
+function openJobModal(jobId) {
+    document.getElementById('job-pk').value = jobId;
+    document.getElementById('job-modal').classList.remove('hidden');
+    document.getElementById('result-msg').classList.add('hidden');
+    document.getElementById('form-fields').innerHTML = '<p class="text-code-text">Ready to execute</p>';
+}
+
+function closeJobModal() {
+    document.getElementById('job-modal').classList.add('hidden');
+}
+
+async function executeJob(event) {
+    event.preventDefault();
+    const pk = document.getElementById('job-pk').value;
+    const btn = document.getElementById('submit-btn');
+
+    btn.disabled = true;
+    btn.innerHTML = 'Executing...';
+
+    try {
+        const response = await fetch(`/cpanel/api/auto-jobs/${pk}/execute/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: JSON.stringify({ params: {} })
+        });
+
+        const data = await response.json();
+        const resultMsg = document.getElementById('result-msg');
+
+        if (response.ok) {
+            resultMsg.className = 'p-4 rounded-lg text-sm bg-green-900/20 border border-green-700 text-green-200';
+            resultMsg.innerHTML = `✓ Job queued! <a href="/cpanel/runs/${data.run_id}/" class="underline">View Run</a>`;
+        } else {
+            resultMsg.className = 'p-4 rounded-lg text-sm bg-red-900/20 border border-red-700 text-red-200';
+            resultMsg.innerHTML = `✗ Error: ${data.error || 'Unknown error'}`;
+        }
+        resultMsg.classList.remove('hidden');
+    } catch (error) {
+        const resultMsg = document.getElementById('result-msg');
+        resultMsg.className = 'p-4 rounded-lg text-sm bg-red-900/20 border border-red-700 text-red-200';
+        resultMsg.innerHTML = `✗ Error: ${error.message}`;
+        resultMsg.classList.remove('hidden');
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = 'Execute';
+    }
+}
+</script>
+{% endblock %}

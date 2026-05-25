@@ -1,0 +1,72 @@
+{% extends "cpanel/base.html" %}
+
+{% block title %}Configure Auto Job - {{ script.name }}{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <div class="flex items-center space-x-4">
+        <a href="{% url 'cpanel:auto_jobs_list' %}" class="text-code-accent hover:underline">← Auto Jobs</a>
+        <h1 class="text-3xl font-bold text-code-text">Configure: {{ script.name }}</h1>
+    </div>
+
+    {% if success_message %}
+    <div class="bg-green-900/20 border border-green-700 text-green-200 p-4 rounded-lg">
+        {{ success_message }}
+    </div>
+    {% endif %}
+
+    {% if error_message %}
+    <div class="bg-red-900/20 border border-red-700 text-red-200 p-4 rounded-lg">
+        {{ error_message }}
+    </div>
+    {% endif %}
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="lg:col-span-2">
+            <form method="post" class="bg-code-bg border border-code-border rounded-lg p-6 space-y-4">
+                {% csrf_token %}
+                <div>
+                    <label for="webhook_params" class="block text-sm font-medium text-code-text mb-2">
+                        Parameter Schema (JSON)
+                    </label>
+                    <textarea
+                        id="webhook_params"
+                        name="webhook_params"
+                        rows="12"
+                        class="w-full bg-code-surface border border-code-border text-code-text rounded-lg p-3 font-mono text-sm focus:outline-none focus:border-code-accent"
+                        placeholder="[&#10;  {&#10;    &#34;name&#34;: &#34;target_url&#34;,&#10;    &#34;label&#34;: &#34;Target URL&#34;,&#10;    &#34;type&#34;: &#34;url&#34;,&#10;    &#34;required&#34;: true&#10;  }&#10;]"
+                    >{{ webhook_params_json }}</textarea>
+                </div>
+                <button type="submit" class="bg-code-accent hover:bg-code-accent/90 text-white font-medium py-2 px-6 rounded-lg transition-colors">
+                    Save Configuration
+                </button>
+            </form>
+        </div>
+
+        <div class="bg-code-bg border border-code-border rounded-lg p-6">
+            <h3 class="text-lg font-semibold text-code-text mb-4">Parameter Schema Format</h3>
+            <div class="text-sm text-code-muted space-y-3">
+                <p>Define an array of parameter objects:</p>
+                <pre class="bg-code-surface p-3 rounded text-xs overflow-auto">{
+  "name": "field_id",
+  "label": "Display Name",
+  "type": "text|url|email|number|textarea",
+  "required": true,
+  "placeholder": "Help text",
+  "help_text": "Optional"
+}</pre>
+                <div class="border-t border-code-border pt-3 mt-3">
+                    <p class="font-semibold text-code-text mb-2">Types:</p>
+                    <ul class="space-y-1">
+                        <li><code class="text-xs bg-code-surface px-2 py-1 rounded">text</code> - Text input</li>
+                        <li><code class="text-xs bg-code-surface px-2 py-1 rounded">url</code> - URL input</li>
+                        <li><code class="text-xs bg-code-surface px-2 py-1 rounded">email</code> - Email input</li>
+                        <li><code class="text-xs bg-code-surface px-2 py-1 rounded">number</code> - Number input</li>
+                        <li><code class="text-xs bg-code-surface px-2 py-1 rounded">textarea</code> - Large text</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
