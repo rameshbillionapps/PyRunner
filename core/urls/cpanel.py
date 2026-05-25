@@ -19,6 +19,11 @@ def auto_job_configure_view(request, pk):
 def auto_job_execute_api(request, pk):
     return JsonResponse({"status": "ok"})
 
+# Test route to verify URL routing is working
+@login_required
+def test_route_view(request):
+    return HttpResponse("TEST ROUTE OK")
+
 from core.views.scripts import (
     script_list_view,
     script_create_view,
@@ -155,6 +160,9 @@ urlpatterns = [
     path("auto-jobs/", auto_jobs_list_view, name="auto_jobs_list"),
     path("auto-jobs/<uuid:pk>/configure/", auto_job_configure_view, name="auto_job_configure"),
     path("api/auto-jobs/<uuid:pk>/execute/", auto_job_execute_api, name="auto_job_execute"),
+
+    # Test route
+    path("test-route/", test_route_view, name="test_route"),
 
     # Runs
     path("runs/", run_list_view, name="run_list"),
