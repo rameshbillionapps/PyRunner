@@ -61,6 +61,12 @@ class Script(models.Model):
         help_text="Unique token for webhook URL (auto-generated)",
     )
 
+    webhook_params = models.JSONField(
+        null=True,
+        blank=True,
+        help_text="Parameter schema for auto-jobs UI. JSON array of param definitions.",
+    )
+
     # Notification settings
     class NotifyOn(models.TextChoices):
         NEVER = "never", "Never"
@@ -203,3 +209,8 @@ class Script(models.Model):
     def has_webhook(self) -> bool:
         """Check if this script has a webhook token configured."""
         return bool(self.webhook_token)
+
+    @property
+    def is_auto_job(self) -> bool:
+        """Check if this script is configured as an auto-job."""
+        return bool(self.webhook_params and self.has_webhook)

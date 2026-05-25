@@ -19,6 +19,15 @@
             <span>Scripts</span>
         </a>
 
+        <!-- Auto Jobs -->
+        <a href="{% url 'cpanel:auto_jobs_list' %}"
+           class="flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors {% if 'auto_job' in request.resolver_match.url_name %}bg-code-accent/20 text-code-accent{% else %}text-code-muted hover:text-code-text hover:bg-code-bg{% endif %}">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+            </svg>
+            <span>Auto Jobs</span>
+        </a>
+
         <!-- Runs -->
         <a href="{% url 'cpanel:run_list' %}"
            class="flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors {% if 'run' in request.resolver_match.url_name %}bg-code-accent/20 text-code-accent{% else %}text-code-muted hover:text-code-text hover:bg-code-bg{% endif %}">

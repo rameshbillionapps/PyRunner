@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Configure Auto Job - PyRunner{% endblock %}
+
+{% block content %}
+<div class="flex">
+    {% include "cpanel/_sidebar.html" %}
+
+    <div class="flex-1 p-8">
+        <!-- Header -->
+        <div class="flex items-center mb-8">
+            <a href="{% url 'cpanel:auto_jobs_list' %}" class="text-code-accent hover:underline mr-4">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                </svg>
+            </a>
+            <div>
+                <h1 class="text-2xl font-bold text-code-text">Configure Auto Job</h1>
+                <p class="text-code-muted">{{ script.name }}</p>
+            </div>
+        </div>
+
+        <!-- Two Column Layout -->
+        <div class="grid grid-cols-7 gap-6">
+            <!-- Left Column: Editor -->
+            <div class="col-span-4">
+                <form method="post" id="config-form" class="space-y-4">
+                    {% csrf_token %}
+
+                    <div>
+                        <label class="block text-sm font-semibold text-code-text mb-3">Parameter Schema (JSON)</label>
+                        <div id="editor" class="border border-code-border rounded-lg overflow-hidden" style="height: 500px;"></div>
+                        <input type="hidden" name="webhook_params" id="webhook_params_input" value="">
+                    </div>
+
+                    <div class="flex gap-3">
+                        <button type="submit"
+                                class="flex-1 px-4 py-2 bg-code-accent hover:bg-code-accent/90 text-white font-semibold rounded-lg transition-colors flex items-center justify-center space-x-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                            </svg>
+                            <span>Save Configuration</span>
+                        </button>
+                        <a href="{% url 'cpanel:auto_jobs_list' %}"
+                           class="px-4 py-2 bg-code-bg hover:bg-code-bg/80 text-code-text font-semibold rounded-lg transition-colors">
+                            Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Right Column: Instructions & Example -->
+            <div class="col-span-3">
+                <div class="bg-code-surface border border-code-border rounded-xl p-6 sticky top-8">
+                    <h3 class="text-lg font-semibold text-code-text mb-4">Parameter Schema</h3>
+
+                    <div class="space-y-4 text-sm">
+                        <div>
+                            <h4 class="font-semibold text-code-text mb-2">Format</h4>
+                            <p class="text-code-muted">Define an array of parameter objects. Each parameter can have:</p>
+                            <ul class="list-disc list-inside text-code-muted mt-2 space-y-1">
+                                <li><code class="bg-code-bg px-1 rounded">name</code> — Form field name</li>
+                                <li><code class="bg-code-bg px-1 rounded">label</code> — Display label</li>
+                                <li><code class="bg-code-bg px-1 rounded">type</code> — text, email, url, number, textarea</li>
+                                <li><code class="bg-code-bg px-1 rounded">required</code> — true/false</li>
+                                <li><code class="bg-code-bg px-1 rounded">placeholder</code> — Input hint</li>
+                                <li><code class="bg-code-bg px-1 rounded">help_text</code> — Field description</li>
+                            </ul>
+                        </div>
+
+                        <div class="border-t border-code-border pt-4">
+                            <h4 class="font-semibold text-code-text mb-2">Example</h4>
+                            <pre class="bg-code-bg p-3 rounded text-xs text-code-text overflow-x-auto">{{ example_schema }}</pre>
+                        </div>
+
+                        <div class="border-t border-code-border pt-4 bg-code-green/10 p-3 rounded">
+                            <p class="text-code-green text-xs">
+                                <strong>Tip:</strong> These parameters will be passed to the script as JSON when the job is executed.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Monaco Editor -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs/loader.min.js"></script>
+<script>
+    require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs' } });
+
+    let editor;
+    require(['vs/editor/editor.main'], function() {
+        editor = monaco.editor.create(document.getElementById('editor'), {
+            value: `{{ current_params|escapejs }}`,
+            language: 'json',
+            theme: 'vs-dark',
+            minimap: { enabled: false },
+            fontSize: 13,
+            fontFamily: 'Fira Code, monospace',
+            lineHeight: 1.6,
+            scrollBeyondLastLine: false,
+            automaticLayout: true,
+        });
+
+        // Override dark theme colors
+        monaco.editor.defineTheme('pyrunner-dark', {
+            base: 'vs-dark',
+            inherit: true,
+            colors: {
+                'editor.background': '#1a1a2e',
+                'editor.foreground': '#e0e0e0',
+                'editor.lineNumbersBackground': '#16213e',
+                'editorLineNumber.foreground': '#4a5568',
+                'editor.selectionBackground': '#264f78',
+                'editor.lineHighlightBackground': '#16213e',
+            },
+            rules: []
+        });
+        monaco.editor.setTheme('pyrunner-dark');
+
+        // Handle form submit
+        document.getElementById('config-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const value = editor.getValue();
+
+            // Validate JSON
+            try {
+                JSON.parse(value);
+            } catch (err) {
+                alert('Invalid JSON: ' + err.message);
+                return;
+            }
+
+            // Set hidden input and submit
+            document.getElementById('webhook_params_input').value = value;
+            this.submit();
+        });
+    });
+</script>
+
+<style>
+    .monaco-editor, .monaco-editor-background, .monaco-editor .inputarea {
+        background-color: #1a1a2e !important;
+    }
+</style>
+{% endblock %}

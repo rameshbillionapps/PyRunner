@@ -1,0 +1,313 @@
+{% extends "base.html" %}
+
+{% block title %}Auto Jobs - PyRunner{% endblock %}
+
+{% block content %}
+<div class="flex">
+    {% include "cpanel/_sidebar.html" %}
+
+    <div class="flex-1 p-8">
+        <!-- Header -->
+        <div class="flex items-center justify-between mb-8">
+            <div>
+                <h1 class="text-2xl font-bold text-code-text">Auto Jobs</h1>
+                <p class="text-code-muted">Execute scripts with dynamic parameters</p>
+            </div>
+        </div>
+
+        <!-- Jobs Grid -->
+        {% if jobs %}
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% for job in jobs %}
+            <div class="bg-code-surface border border-code-border rounded-xl p-6 hover:border-code-accent/50 transition-colors">
+                <!-- Job Header -->
+                <div class="mb-4">
+                    <h3 class="text-lg font-semibold text-code-text">{{ job.name }}</h3>
+                    {% if job.description %}
+                    <p class="text-code-muted text-sm mt-1 line-clamp-2">{{ job.description }}</p>
+                    {% endif %}
+                </div>
+
+                <!-- Job Meta -->
+                <div class="mb-6 space-y-2 text-sm">
+                    <div class="flex items-center text-code-muted">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                        </svg>
+                        <span>Environment: {{ job.environment.name }}</span>
+                    </div>
+                    <div class="flex items-center text-code-muted">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        <span>{{ job.webhook_params|length }} parameter{{ job.webhook_params|length|pluralize }}</span>
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="flex gap-3">
+                    <button onclick="openJobModal('{{ job.pk }}')"
+                            class="flex-1 px-4 py-2 bg-code-accent hover:bg-code-accent/90 text-white font-semibold rounded-lg transition-colors flex items-center justify-center space-x-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                        </svg>
+                        <span>Run</span>
+                    </button>
+                    <a href="{% url 'cpanel:auto_job_configure' pk=job.pk %}"
+                       class="px-4 py-2 bg-code-bg hover:bg-code-bg/80 text-code-text font-semibold rounded-lg transition-colors flex items-center space-x-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                        </svg>
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        {% else %}
+        <!-- Empty State -->
+        <div class="bg-code-surface border border-code-border rounded-xl p-12 text-center">
+            <div class="w-16 h-16 bg-code-accent/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg class="w-8 h-8 text-code-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                </svg>
+            </div>
+            <h3 class="text-lg font-semibold text-code-text mb-2">No auto-jobs configured</h3>
+            <p class="text-code-muted mb-6">Create and configure scripts with webhook parameters to get started.</p>
+            <a href="{% url 'cpanel:script_list' %}"
+               class="inline-flex items-center px-4 py-2 bg-code-accent hover:bg-code-accent/90 text-white font-semibold rounded-lg transition-colors">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                </svg>
+                View Scripts
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Job Modal -->
+<div id="job-modal" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+    <div class="bg-code-surface border border-code-border rounded-xl shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+        <!-- Modal Header -->
+        <div class="flex items-center justify-between p-6 border-b border-code-border sticky top-0 bg-code-surface">
+            <h2 id="modal-title" class="text-xl font-bold text-code-text">Job Title</h2>
+            <button onclick="closeJobModal()"
+                    class="text-code-muted hover:text-code-text transition-colors">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
+        </div>
+
+        <!-- Modal Body -->
+        <form id="job-form" class="p-6 space-y-4" onsubmit="submitJobForm(event)">
+            <div id="modal-fields"></div>
+
+            <!-- Response Message -->
+            <div id="modal-response" class="hidden p-4 rounded-lg text-sm"></div>
+
+            <!-- Submit Button -->
+            <button id="modal-submit" type="submit"
+                    class="w-full px-4 py-2 bg-code-accent hover:bg-code-accent/90 text-white font-semibold rounded-lg transition-colors flex items-center justify-center space-x-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                </svg>
+                <span>Execute</span>
+            </button>
+        </form>
+    </div>
+</div>
+
+<script>
+const JOB_CONFIGS = {{ job_configs_json|safe }};
+
+function openJobModal(jobId) {
+    const job = JOB_CONFIGS[jobId];
+    if (!job) return;
+
+    // Set title
+    document.getElementById('modal-title').textContent = job.name;
+
+    // Clear previous fields
+    const fieldsContainer = document.getElementById('modal-fields');
+    fieldsContainer.innerHTML = '';
+
+    // Build form fields from schema
+    if (job.params && job.params.length > 0) {
+        job.params.forEach(paramDef => {
+            const fieldGroup = buildFormField(paramDef);
+            fieldsContainer.appendChild(fieldGroup);
+        });
+    } else {
+        fieldsContainer.innerHTML = '<p class="text-code-muted text-sm">No parameters required</p>';
+    }
+
+    // Reset response message
+    const responseDiv = document.getElementById('modal-response');
+    responseDiv.classList.add('hidden');
+    responseDiv.textContent = '';
+
+    // Reset submit button
+    const submitBtn = document.getElementById('modal-submit');
+    submitBtn.disabled = false;
+    submitBtn.innerHTML = `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg><span>Execute</span>`;
+
+    // Store job ID in form
+    document.getElementById('job-form').dataset.jobId = jobId;
+
+    // Show modal
+    document.getElementById('job-modal').classList.remove('hidden');
+}
+
+function closeJobModal() {
+    document.getElementById('job-modal').classList.add('hidden');
+}
+
+function buildFormField(paramDef) {
+    const fieldGroup = document.createElement('div');
+    const label = document.createElement('label');
+    label.textContent = paramDef.label || paramDef.name;
+    label.className = 'block text-sm font-medium text-code-text mb-2';
+
+    let input;
+    switch (paramDef.type) {
+        case 'email':
+            input = document.createElement('input');
+            input.type = 'email';
+            input.name = paramDef.name;
+            break;
+        case 'url':
+            input = document.createElement('input');
+            input.type = 'url';
+            input.name = paramDef.name;
+            break;
+        case 'number':
+            input = document.createElement('input');
+            input.type = 'number';
+            input.name = paramDef.name;
+            break;
+        case 'textarea':
+            input = document.createElement('textarea');
+            input.name = paramDef.name;
+            input.rows = 4;
+            break;
+        case 'select':
+            input = document.createElement('select');
+            input.name = paramDef.name;
+            if (paramDef.options) {
+                paramDef.options.forEach(opt => {
+                    const option = document.createElement('option');
+                    option.value = typeof opt === 'string' ? opt : opt.value;
+                    option.textContent = typeof opt === 'string' ? opt : opt.label;
+                    input.appendChild(option);
+                });
+            }
+            break;
+        default:
+            input = document.createElement('input');
+            input.type = 'text';
+            input.name = paramDef.name;
+    }
+
+    input.className = 'w-full px-3 py-2 bg-code-bg border border-code-border rounded-lg text-code-text focus:outline-none focus:ring-2 focus:ring-code-accent/50 focus:border-transparent';
+    input.placeholder = paramDef.placeholder || '';
+    input.required = paramDef.required || false;
+
+    if (paramDef.help_text) {
+        const helpText = document.createElement('p');
+        helpText.className = 'text-code-muted text-xs mt-1';
+        helpText.textContent = paramDef.help_text;
+        fieldGroup.appendChild(label);
+        fieldGroup.appendChild(input);
+        fieldGroup.appendChild(helpText);
+    } else {
+        fieldGroup.appendChild(label);
+        fieldGroup.appendChild(input);
+    }
+
+    return fieldGroup;
+}
+
+async function submitJobForm(event) {
+    event.preventDefault();
+
+    const jobId = document.getElementById('job-form').dataset.jobId;
+    const job = JOB_CONFIGS[jobId];
+
+    // Collect form data
+    const formData = new FormData(document.getElementById('job-form'));
+    const params = {};
+    for (let [key, value] of formData.entries()) {
+        params[key] = value;
+    }
+
+    // Show loading state
+    const submitBtn = document.getElementById('modal-submit');
+    const originalHtml = submitBtn.innerHTML;
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = `<svg class="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"/></svg><span>Executing...</span>`;
+
+    try {
+        // Get CSRF token
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value ||
+                         document.cookie.split('; ').find(row => row.startsWith('csrftoken='))?.split('=')[1];
+
+        // Call API
+        const response = await fetch(job.execute_url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken || '',
+            },
+            body: JSON.stringify({ params })
+        });
+
+        const result = await response.json();
+
+        // Show response
+        const responseDiv = document.getElementById('modal-response');
+        responseDiv.classList.remove('hidden');
+
+        if (response.ok) {
+            responseDiv.className = 'p-4 rounded-lg text-sm bg-code-green/20 text-code-green';
+            responseDiv.innerHTML = `
+                <div class="font-semibold mb-2">✓ Script queued successfully!</div>
+                <div class="text-xs mb-3">Run ID: ${result.run_id}</div>
+                <a href="${result.run_url}" class="underline hover:no-underline">View Run Details →</a>
+            `;
+        } else {
+            responseDiv.className = 'p-4 rounded-lg text-sm bg-code-red/20 text-code-red';
+            const errorMsg = result.error || 'Unknown error';
+            responseDiv.textContent = `✗ ${errorMsg}`;
+        }
+
+        // Reset button
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalHtml;
+
+    } catch (error) {
+        const responseDiv = document.getElementById('modal-response');
+        responseDiv.classList.remove('hidden');
+        responseDiv.className = 'p-4 rounded-lg text-sm bg-code-red/20 text-code-red';
+        responseDiv.textContent = `✗ Request failed: ${error.message}`;
+
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalHtml;
+    }
+}
+
+// Close modal on Escape key
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeJobModal();
+});
+
+// Close modal on background click
+document.getElementById('job-modal')?.addEventListener('click', (e) => {
+    if (e.target === document.getElementById('job-modal')) closeJobModal();
+});
+</script>
+{% endblock %}
